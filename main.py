@@ -83,14 +83,26 @@ def score(trend_ok, sweep, bos, vol, atr_ok):
     return s
 
 # ================= TRADE PLAN =================
-def plan(df, trend):
-    price = df['close'].iloc[-1]
-    a = df['atr'].iloc[-1]
+def trade_plan_smc(m15, h4, trend):
+    entry = m15['close'].iloc[-1]
 
+    # ===== LONG =====
     if trend == "LONG":
-        return price, price - a, price + 1.5*a, price + 3*a
+        # SL = đáy sweep gần nhất
+        sl = m15['low'].iloc[-5:-1].min()
+
+        # TP = H4 high gần nhất
+        tp = h4['high'].iloc[-20:].max()
+
+    # ===== SHORT =====
     else:
-        return price, price + a, price - 1.5*a, price - 3*a
+        # SL = đỉnh sweep gần nhất
+        sl = m15['high'].iloc[-5:-1].max()
+
+        # TP = H4 low gần nhất
+        tp = h4['low'].iloc[-20:].min()
+
+    return entry, sl, tp
 
 def link(symbol):
     return f"https://www.binance.com/en/futures/{symbol}"
