@@ -15,8 +15,27 @@ def send(msg):
 
 # ================= DATA =================
 def get_symbols():
-    data = requests.get(BASE_URL + "/fapi/v1/ticker/price").json()
-    return [s['symbol'] for s in data if "USDT" in s['symbol']][:60]
+    url = BASE_URL + "/fapi/v1/exchangeInfo"
+    
+    try:
+        res = requests.get(url, timeout=10)
+        data = res.json()
+
+        # check lỗi API
+        if isinstance(data, dict) and "symbols" not in data:
+            print("API ERROR:", data)
+            return []
+
+        symbols = [
+            s['symbol'] for s in data['symbols']
+            if s['quoteAsset'] == "USDT" and s['contractType'] == "PERPETUAL"
+        ]
+
+        return symbols[:60]
+
+    except Exception as e:
+        print("ERROR get_symbols:", e)
+        return []
 
 def get_klines(symbol, interval):
     url = f"{BASE_URL}/fapi/v1/klines?symbol={symbol}&interval={interval}&limit=100"
